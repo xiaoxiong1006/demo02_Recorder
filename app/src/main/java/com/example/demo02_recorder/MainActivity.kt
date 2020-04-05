@@ -2,6 +2,7 @@ package com.example.demo02_recorder
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
 import android.media.MediaRecorder
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -25,16 +26,20 @@ class MainActivity : AppCompatActivity() {
     )
 
     enum class State{
-        INIT,RECORING
+        INIT,RECORING,PLAYING
     }
 
     var stateRecord : State = State.INIT
+    var statePlay:State =State.INIT
     lateinit var speakImg : ImageView
+    lateinit var playImg : ImageView
+
 
     lateinit var mMediaRecorder : MediaRecorder
     lateinit var fileName : String
     lateinit var filePath : String
 
+    var mMediaPlayer = MediaPlayer()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,15 +49,19 @@ class MainActivity : AppCompatActivity() {
 
         speakImg= findViewById(R.id.speak_img)
         speakImg.setOnClickListener {
-
             if(checkPermission()){
                 record()
             }
             else{
                 requestPermission()
             }
-
         }
+
+        playImg = findViewById(R.id.play_img)
+        playImg.setOnClickListener {
+            play()
+        }
+
 
     }
 
@@ -112,6 +121,9 @@ class MainActivity : AppCompatActivity() {
         // 如果当前是初始化状态，就录音。是录音状态，就恢复到初始状态。
         if(stateRecord == State.INIT){
 
+            //停止播放录音
+            stop_play()
+
             //设置录音来源为主麦克风
             mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
             //设置录音输入格式为MPEG_4
@@ -155,5 +167,49 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * 播放录音
+     */
+    fun play(){
+        // 如果处于初始化状态，同时又没有在录音，那么就播放
+        if(statePlay == State.INIT && stateRecord != State.RECORING){
+            if (this::filePath.isInitialized) { //如果录音文件已经存在
+                //改变播放图标为暂停
+                playImg.setImageResource(android.R.drawable.ic_media_pause)
+                //改变播放状态为正在播放
+                statePlay = State.PLAYING
+                //为了防止重复加载播放资源
+                mMediaPlayer.reset()
+                //加载录音文件的地址
+                mMediaPlayer.setDataSource(filePath)
+                //播放准备
+                mMediaPlayer.prepare()
+                //开始播放
+                mMediaPlayer.start()
+
+                //播放完毕后
+                mMediaPlayer.setOnCompletionListener {
+                    //停止播放
+                    stop_play()
+                }
+            }
+        }else if(statePlay == State.PLAYING){  //如果处于播放状态，那么就暂停
+
+            //停止播放
+            stop_play()
+        }
+    }
+
+    /**
+     * 停止播放
+     */
+    fun stop_play(){
+        //将播放置回初始状态
+        statePlay = State.INIT
+        //改变图标为播放图标
+        playImg.setImageResource(android.R.drawable.ic_media_play)
+        //停止播放
+        mMediaPlayer.stop()
+    }
 
 }
