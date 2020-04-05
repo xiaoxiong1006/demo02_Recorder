@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -20,6 +21,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val speakImg : ImageView = findViewById(R.id.speak_img)
+        speakImg.setOnClickListener {
+            Toast.makeText(MainActivity@this,"准备好录音了!",Toast.LENGTH_SHORT).show()
+        }
 
         //检查并请求权限
         if(!checkPermission()){
