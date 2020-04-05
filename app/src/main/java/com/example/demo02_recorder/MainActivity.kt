@@ -2,12 +2,18 @@ package com.example.demo02_recorder
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.MediaRecorder
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
+import android.text.format.DateFormat
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.io.File
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,9 +31,16 @@ class MainActivity : AppCompatActivity() {
     var stateRecord : State = State.INIT
     lateinit var speakImg : ImageView
 
+    lateinit var mMediaRecorder : MediaRecorder
+    lateinit var fileName : String
+    lateinit var filePath : String
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        mMediaRecorder = MediaRecorder()
 
         speakImg= findViewById(R.id.speak_img)
         speakImg.setOnClickListener {
@@ -99,17 +112,48 @@ class MainActivity : AppCompatActivity() {
         // 如果当前是初始化状态，就录音。是录音状态，就恢复到初始状态。
         if(stateRecord == State.INIT){
 
+            //设置录音来源为主麦克风
+            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+            //设置录音输入格式为MPEG_4
+            mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            //设置编解码方式为AAC，相比较mp3文件更小，更清晰
+            mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+
+            //文件名称
+            fileName = DateFormat.format("yyyyMMdd_HHmmss", Calendar.getInstance(Locale.CHINA)).toString() + ".m4a"
+            //创建目录
+            val destDir = File(Environment.getExternalStorageDirectory().toString()+"/test/")
+            if (!destDir.exists()) {
+                destDir.mkdirs()
+            }
+            //存储路径
+            filePath = Environment.getExternalStorageDirectory().toString() + "/test/" + fileName
+            //设置输出路径即为存储路径
+            mMediaRecorder.setOutputFile(filePath)
+
+            //录音准备
+            mMediaRecorder.prepare()
+            //录音开始
+            mMediaRecorder.start()
+
             //改变录音控件的图标为暂停
             speakImg.setImageResource(android.R.drawable.ic_media_pause)
             //改变状态为录音状态
             stateRecord = State.RECORING
 
         }else if(stateRecord == State.RECORING){
-
+            //改变录音控件的图标为录音
             speakImg.setImageResource(android.R.drawable.ic_btn_speak_now)
+            //改变状态为等待录音状态
             stateRecord = State.INIT
 
+            //录音停止
+            mMediaRecorder.stop()
+
+            //弹窗显示录音保存的路径
+            Toast.makeText(MainActivity@this,"录音存储路径；"+filePath,Toast.LENGTH_SHORT).show()
         }
     }
+
 
 }
