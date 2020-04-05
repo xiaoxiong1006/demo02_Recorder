@@ -18,18 +18,27 @@ class MainActivity : AppCompatActivity() {
         PERMISSION_FILE, PERMISSION_RECORD
     )
 
+    enum class State{
+        INIT,RECORING
+    }
+
+    var stateRecord : State = State.INIT
+    lateinit var speakImg : ImageView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val speakImg : ImageView = findViewById(R.id.speak_img)
+        speakImg= findViewById(R.id.speak_img)
         speakImg.setOnClickListener {
-            Toast.makeText(MainActivity@this,"准备好录音了!",Toast.LENGTH_SHORT).show()
-        }
 
-        //检查并请求权限
-        if(!checkPermission()){
-            requestPermission()
+            if(checkPermission()){
+                record()
+            }
+            else{
+                requestPermission()
+            }
+
         }
 
     }
@@ -39,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         //requestCode是我们请求权限时的请求码
         when(requestCode){
             1 -> {
-                Toast.makeText(this,"请求权限成功", Toast.LENGTH_SHORT).show()
+                record()
             }
         }
     }
@@ -83,5 +92,24 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    /**
+     * 录音
+     */
+    fun record(){
+        // 如果当前是初始化状态，就录音。是录音状态，就恢复到初始状态。
+        if(stateRecord == State.INIT){
+
+            //改变录音控件的图标为暂停
+            speakImg.setImageResource(android.R.drawable.ic_media_pause)
+            //改变状态为录音状态
+            stateRecord = State.RECORING
+
+        }else if(stateRecord == State.RECORING){
+
+            speakImg.setImageResource(android.R.drawable.ic_btn_speak_now)
+            stateRecord = State.INIT
+
+        }
+    }
 
 }
