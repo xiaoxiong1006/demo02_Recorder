@@ -75,6 +75,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        mMediaRecorder?.release()
+        mMediaPlayer?.release()
+    }
+
 
     /**
      * 动态请求必须的权限
