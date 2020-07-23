@@ -7,7 +7,9 @@ import android.media.MediaRecorder
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
+import android.os.SystemClock
 import android.text.format.DateFormat
+import android.widget.Chronometer
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -33,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     var statePlay:State =State.INIT
     lateinit var speakImg : ImageView
     lateinit var playImg : ImageView
-
+    lateinit var timer:Chronometer
 
     lateinit var mMediaRecorder : MediaRecorder
     lateinit var fileName : String
@@ -48,6 +50,9 @@ class MainActivity : AppCompatActivity() {
         mMediaRecorder = MediaRecorder()
 
         speakImg= findViewById(R.id.speak_img)
+        playImg = findViewById(R.id.play_img)
+        timer = findViewById(R.id.timer)
+
         speakImg.setOnClickListener {
             if(checkPermission()){
                 record()
@@ -57,11 +62,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        playImg = findViewById(R.id.play_img)
         playImg.setOnClickListener {
             play()
         }
-
 
     }
 
@@ -129,7 +132,7 @@ class MainActivity : AppCompatActivity() {
 
             //停止播放录音
             stop_play()
-
+            
             //设置录音来源为主麦克风
             mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
             //设置录音输入格式为MPEG_4
@@ -159,6 +162,15 @@ class MainActivity : AppCompatActivity() {
             //改变状态为录音状态
             stateRecord = State.RECORING
 
+            //计时器清零
+            timer.setBase(SystemClock.elapsedRealtime())
+            //计算当前时间与初始时间差
+            val hour : Int =  ((SystemClock.elapsedRealtime() - timer.getBase()) / 1000 / 60).toInt()
+            //按照设定的格式显示
+            timer.setFormat("0"+hour+":%s")
+            //计时器启动
+            timer.start()
+
         }else if(stateRecord == State.RECORING){
             //改变录音控件的图标为录音
             speakImg.setImageResource(android.R.drawable.ic_btn_speak_now)
@@ -167,6 +179,12 @@ class MainActivity : AppCompatActivity() {
 
             //录音停止
             mMediaRecorder.stop()
+
+            //计时器停止
+            timer.stop()
+            //计时器清零
+            timer.setBase(SystemClock.elapsedRealtime())
+
 
             //弹窗显示录音保存的路径
             Toast.makeText(MainActivity@this,"录音存储路径；"+filePath,Toast.LENGTH_SHORT).show()
