@@ -18,7 +18,7 @@ import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(),RecorderTask.OnVolumeChangeListener{
 
     val PERMISSION_FILE = Manifest.permission.WRITE_EXTERNAL_STORAGE
     val PERMISSION_RECORD = Manifest.permission.RECORD_AUDIO
@@ -37,21 +37,27 @@ class MainActivity : AppCompatActivity() {
     lateinit var playImg : ImageView
     lateinit var timer:Chronometer
 
-    lateinit var mMediaRecorder : MediaRecorder
+    //lateinit var mMediaRecorder : MediaRecorder
     lateinit var fileName : String
     lateinit var filePath : String
 
     var mMediaPlayer = MediaPlayer()
 
+    lateinit var mMediaRecorderTask: RecorderTask
+    lateinit var mViewRhythm: RhythmView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        mMediaRecorder = MediaRecorder()
+       // mMediaRecorder = MediaRecorder()
 
         speakImg= findViewById(R.id.speak_img)
         playImg = findViewById(R.id.play_img)
         timer = findViewById(R.id.timer)
+        mViewRhythm = findViewById(R.id.view_rhythm)
+        mMediaRecorderTask = RecorderTask(this)
+
 
         speakImg.setOnClickListener {
             if(checkPermission()){
@@ -80,10 +86,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        mMediaRecorder?.release()
+        //mMediaRecorder?.release()
         mMediaPlayer?.release()
     }
 
+    override fun volumeChange(per: Double) {
+        mViewRhythm.mPerHeight = per
+    }
 
     /**
      * 动态请求必须的权限
@@ -134,11 +143,11 @@ class MainActivity : AppCompatActivity() {
             stop_play()
             
             //设置录音来源为主麦克风
-            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+            //mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
             //设置录音输入格式为MPEG_4
-            mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            //mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             //设置编解码方式为AAC，相比较mp3文件更小，更清晰
-            mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            //mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
 
             //文件名称
             fileName = DateFormat.format("yyyyMMdd_HHmmss", Calendar.getInstance(Locale.CHINA)).toString() + ".m4a"
@@ -150,12 +159,13 @@ class MainActivity : AppCompatActivity() {
             //存储路径
             filePath = Environment.getExternalStorageDirectory().toString() + "/test/" + fileName
             //设置输出路径即为存储路径
-            mMediaRecorder.setOutputFile(filePath)
+            //mMediaRecorder.setOutputFile(filePath)
 
             //录音准备
-            mMediaRecorder.prepare()
+            //mMediaRecorder.prepare()
             //录音开始
-            mMediaRecorder.start()
+            //mMediaRecorder.start()
+            mMediaRecorderTask?.startRecorder(filePath)
 
             //改变录音控件的图标为暂停
             speakImg.setImageResource(android.R.drawable.ic_media_pause)
@@ -178,7 +188,8 @@ class MainActivity : AppCompatActivity() {
             stateRecord = State.INIT
 
             //录音停止
-            mMediaRecorder.stop()
+            //mMediaRecorder.stop()
+            mMediaRecorderTask?.stop()
 
             //计时器停止
             timer.stop()

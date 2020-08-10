@@ -40,4 +40,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <com.example.demo02_recorder.RhythmView
+        android:id="@+id/view_rhythm"
+        android:layout_width="0dp"
+        android:layout_height="100dp"
+        app:layout_constraintTop_toBottomOf="@id/timer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="48dp"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
